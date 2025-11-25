@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Boot - Gestion Scolaire Intelligente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #1e3c72, #7e22ce);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #7e22ce;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 5%;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* API Setup */
+        .api-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+        }
+
+        .api-section h2 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+        }
+
+        .api-input-group {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #7e22ce;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #1e3c72, #7e22ce);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(126, 34, 206, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #7e22ce;
+            border: 2px solid #7e22ce;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Home Page */
+        .hero {
+            text-align: center;
+            color: white;
+            padding: 3rem 0;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-label {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Inscription Élèves */
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        /* Liste des Élèves */
+        .students-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #1e3c72, #7e22ce);
+            color: white;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.5fr;
+            gap: 1rem;
+            font-weight: 600;
+        }
+
+        .table-row {
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.5fr;
+            gap: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+        }
+
+        .table-row:hover {
+            background: #f8f9ff;
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Notes et Matières */
+        .grades-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+        }
+
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .subject-card {
+            background: #f8f9ff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #7e22ce;
+            text-align: center;
+        }
+
+        .subject-name {
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+
+        .subject-average {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #7e22ce;
+        }
+
+        /* Statistiques */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Analyse IA */
+        .analysis-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+        }
+
+        .analysis-result {
+            background: #f8f9ff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #7e22ce;
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+
+        .insight-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #10b981;
+        }
+
+        /* Chatbot */
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #1e3c72, #7e22ce);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            max-width: 75%;
+            animation: slideIn 0.3s;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .message.bot .message-avatar {
+            background: linear-gradient(135deg, #1e3c72, #7e22ce);
+        }
+
+        .message.user .message-avatar {
+            background: #e0e7ff;
+        }
+
+        .message-content {
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            line-height: 1.6;
+        }
+
+        .message.bot .message-content {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #1e3c72, #7e22ce);
+            color: white;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background: #f0f0f0;
+            border-radius: 15px;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #7e22ce;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        .chat-input-area {
+            padding: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #7e22ce;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .table-header, .table-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Coach Boot Scolaire</div>
+        <ul class="nav-menu">
+            <li><a onclick="showPage('dashboard')">Tableau de Bord</a></li>
+            <li><a onclick="showPage('students')">Inscription Élèves</a></li>
+            <li><a onclick="showPage('grades')">Notes & Matières</a></li>
+            <li><a onclick="showPage('stats')">Statistiques</a></li>
+            <li><a onclick="showPage('analysis')">Analyse IA</a></li>
+            <li><a onclick="showPage('api-setup')">Configuration API</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Tableau de Bord -->
+        <div id="dashboard" class="page active">
+            <div class="hero">
+                <h1>Coach Boot Scolaire</h1>
+                <p>Plateforme intelligente de gestion et d'analyse des performances scolaires</p>
+            </div>
+            
+            <div class="dashboard-cards">
+                <div class="dashboard-card">
+                    <div class="card-icon">👨‍🎓</div>
+                    <div class="card-value" id="total-students">0</div>
+                    <div class="card-label">Élèves Inscrits</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-icon">📚</div>
+                    <div class="card-value">11</div>
+                    <div class="card-label">Matières</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-value" id="average-grade">0.0</div>
+                    <div class="card-label">Moyenne Générale</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-icon">⭐</div>
+                    <div class="card-value" id="best-student">-</div>
+                    <div class="card-label">Meilleur Élève</div>
+                </div>
+            </div>
+
+            <div class="stats-grid" style="margin-top: 3rem;">
+                <div class="stat-card">
+                    <h3 style="color: #1e3c72; margin-bottom: 1rem;">Répartition par Niveau</h3>
+                    <div class="chart-placeholder">
+                        Graphique des niveaux - Données dynamiques
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3 style="color: #1e3c72; margin-bottom: 1rem;">Performance par Matière</h3>
+                    <div class="chart-placeholder">
+                        Graphique des matières - Données dynamiques
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inscription Élèves -->
+        <div id="students" class="page">
+            <h1 style="color: white; text-align: center; margin-bottom: 2rem;">Gestion des Élèves</h1>
+            
+            <div class="form-container">
+                <h2 style="color: #1e3c72; margin-bottom: 1.5rem;">Inscrire un Nouvel Élève</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" id="student-lastname" class="input-field" placeholder="Dupont">
+                    </div>
+                    <div class="form-group">
+                        <label>Prénom</label>
+                        <input type="text" id="student-firstname" class="input-field" placeholder="Marie">
+                    </div>
+                    <div class="form-group">
+                        <label>Date de Naissance</label>
+                        <input type="date" id="student-birthdate" class="input-field">
+                    </div>
+                    <div class="form-group">
+                        <label>Niveau Scolaire</label>
+                        <select id="student-level" class="input-field">
+                            <option value="6ème">6ème</option>
+                            <option value="5ème">5ème</option>
+                            <option value="4ème">4ème</option>
+                            <option value="3ème">3ème</option>
+                            <option value="2nde">2nde</option>
+                            <option value="1ère">1ère</option>
+                            <option value="Terminale">Terminale</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="addStudent()">Inscrire l'Élève</button>
+            </div>
+
+            <div class="students-table">
+                <div class="table-header">
+                    <div>Nom</div>
+                    <div>Prénom</div>
+                    <div>Date Naissance</div>
+                    <div>Niveau</div>
+                    <div>Moyenne</div>
+                    <div>Actions</div>
+                </div>
+                <div id="students-list">
+                    <!-- Liste dynamique des élèves -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes et Matières -->
+        <div id="grades" class="page">
+            <h1 style="color: white; text-align: center; margin-bottom: 2rem;">Gestion des Notes</h1>
+            
+            <div class="grades-section">
+                <h2 style="color: #1e3c72; margin-bottom: 1.5rem;">Saisie des Notes</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Élève</label>
+                        <select id="grade-student" class="input-field" onchange="loadStudentGrades()">
+                            <option value="">Sélectionner un élève</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Matière</label>
+                        <select id="grade-subject" class="input-field">
+                            <option value="maths">Mathématiques</option>
+                            <option value="french">Français</option>
+                            <option value="english">Anglais</option>
+                            <option value="history">Histoire-Géo</option>
+                            <option value="science">Sciences</option>
+                            <option value="physics">Physique-Chimie</option>
+                            <option value="biology">SVT</option>
+                            <option value="technology">Technologie</option>
+                            <option value="arts">Arts Plastiques</option>
+                            <option value="music">Éducation Musicale</option>
+                            <option value="sport">EPS</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Note (/20)</label>
+                        <input type="number" id="grade-value" class="input-field" min="0" max="20" step="0.5" placeholder="15.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Coefficient</label>
+                        <input type="number" id="grade-coeff" class="input-field" min="1" max="5" value="1">
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="addGrade()">Ajouter la Note</button>
+            </div>
+
+            <div class="grades-section">
+                <h2 style="color: #1e3c72; margin-bottom: 1.5rem;">Moyennes par Matière</h2>
+                <div class="subject-grid" id="subjects-grid">
+                    <!-- Moyennes dynamiques par matière -->
+                </div>
+            </div>
+
+            <div class="grades-section">
+                <h2 style="color: #1e3c72; margin-bottom: 1.5rem;">Détail des Notes</h2>
+                <div id="grades-detail">
+                    <!-- Détail des notes de l'élève sélectionné -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div id="stats" class="page">
+            <h1 style="color: white; text-align: center; margin-bottom: 2rem;">Statistiques Scolaires</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 style="color: #1e3c72; margin-bottom: 1rem;">Répartition des Notes</h3>
+                    <div class="chart-placeholder">
+                        Histogramme des notes - Données dynamiques
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3 style="color: #1e3c72; margin-bottom: 1rem;">Performance par Niveau</h3>
+                    <div class="chart-placeholder">
+                        Graphique par niveau - Données dynamiques
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="color: #1e3c72; margin-bottom: 1rem;">Évolution des Performances</h3>
+                <div class="chart-placeholder">
+                    Courbe d'évolution - Données dynamiques
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 style="color: #1e3c72; margin-bottom: 1rem;">Top 5 des Élèves</h3>
+                    <div id="top-students">
+                        <!-- Liste dynamique -->
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3 style="color: #1e3c72; margin-bottom: 1rem;">Matières les Plus Difficiles</h3>
+                    <div id="difficult-subjects">
+                        <!-- Liste dynamique -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analyse IA -->
+        <div id="analysis" class="page">
+            <h1 style="color: white; text-align: center; margin-bottom: 2rem;">Analyse Intelligente</h1>
+            
+            <div class="analysis-section">
+                <h2 style="color: #1e3c72; margin-bottom: 1rem;">Analyse des Performances avec IA</h2>
+                <p>L'IA analyse les données scolaires pour identifier les tendances, points forts et axes d'amélioration.</p>
+                
+                <div class="api-input-group">
+                    <button class="btn btn-success" onclick="analyzePerformance()">Lancer l'Analyse IA</button>
+                    <button class="btn btn-secondary" onclick="generateRecommendations()">Générer des Recommandations</button>
+                </div>
+                
+                <div id="analysis-result" class="analysis-result" style="display: none;">
+                    <!-- Résultats de l'analyse IA -->
+                </div>
+            </div>
+
+            <div class="analysis-section">
+                <h2 style="color: #1e3c72; margin-bottom: 1rem;">Insights Intelligents</h2>
+                <div id="ai-insights">
+                    <!-- Insights générés par l'IA -->
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>🤖 Assistant Pédagogique IA</h2>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            Bonjour ! Je suis votre assistant pédagogique. Je peux analyser les performances des élèves, suggérer des stratégies d'amélioration et répondre à vos questions éducatives.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chat-input" placeholder="Posez votre question sur les performances scolaires..." onkeypress="handleChatInput(event)">
+                    <button class="btn" onclick="sendMessage()">Envoyer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration API -->
+        <div id="api-setup" class="page">
+            <div class="api-section">
+                <h2>Configuration de l'API OpenAI</h2>
+                <p>Entrez votre clé API OpenAI pour activer l'analyse intelligente des données scolaires.</p>
+                
+                <div class="api-input-group">
+                    <input type="password" id="api-key" class="input-field" placeholder="sk-...">
+                    <button class="btn" onclick="saveApiKey()">Sauvegarder</button>
+                </div>
+                
+                <div class="api-input-group">
+                    <button class="btn btn-secondary" onclick="testApiKey()">Tester la connexion</button>
+                    <button class="btn btn-secondary" onclick="clearApiKey()">Effacer</button>
+                </div>
+                
+                <div id="api-status" class="status-message" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration API
+        const API_KEY_STORAGE = 'openai_api_key';
+        
+        // Données de l'application
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        let grades = JSON.parse(localStorage.getItem('grades')) || [];
+        const subjects = [
+            'maths', 'french', 'english', 'history', 'science', 
+            'physics', 'biology', 'technology', 'arts', 'music', 'sport'
+        ];
+        const subjectNames = {
+            'maths': 'Mathématiques',
+            'french': 'Français',
+            'english': 'Anglais',
+            'history': 'Histoire-Géo',
+            'science': 'Sciences',
+            'physics': 'Physique-Chimie',
+            'biology': 'SVT',
+            'technology': 'Technologie',
+            'arts': 'Arts Plastiques',
+            'music': 'Éducation Musicale',
+            'sport': 'EPS'
+        };
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+            loadStudentsList();
+            loadStudentSelect();
+            loadSubjectsGrid();
+            updateStats();
+            
+            const savedApiKey = localStorage.getItem(API_KEY_STORAGE);
+            if (savedApiKey) {
+                document.getElementById('api-key').value = savedApiKey;
+            }
+        });
+
+        // Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'dashboard') loadDashboard();
+            if (pageId === 'students') loadStudentsList();
+            if (pageId === 'grades') {
+                loadStudentSelect();
+                loadSubjectsGrid();
+            }
+            if (pageId === 'stats') updateStats();
+        }
+
+        // Gestion des élèves
+        function addStudent() {
+            const lastname = document.getElementById('student-lastname').value;
+            const firstname = document.getElementById('student-firstname').value;
+            const birthdate = document.getElementById('student-birthdate').value;
+            const level = document.getElementById('student-level').value;
+            
+            if (!lastname || !firstname || !birthdate) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+            
+            const student = {
+                id: Date.now(),
+                lastname: lastname.trim(),
+                firstname: firstname.trim(),
+                birthdate: birthdate,
+                level: level,
+                grades: []
+            };
+            
+            students.push(student);
+            saveStudents();
+            loadStudentsList();
+            loadStudentSelect();
+            updateDashboard();
+            
+            // Reset form
+            document.getElementById('student-lastname').value = '';
+            document.getElementById('student-firstname').value = '';
+            document.getElementById('student-birthdate').value = '';
+            
+            showStatus('Élève inscrit avec succès!', 'success');
+        }
+
+        function deleteStudent(studentId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cet élève ?')) {
+                students = students.filter(s => s.id !== studentId);
+                grades = grades.filter(g => g.studentId !== studentId);
+                saveStudents();
+                saveGrades();
+                loadStudentsList();
+                loadStudentSelect();
+                updateDashboard();
+                showStatus('Élève supprimé avec succès', 'success');
+            }
+        }
+
+        // Gestion des notes
+        function addGrade() {
+            const studentId = parseInt(document.getElementById('grade-student').value);
+            const subject = document.getElementById('grade-subject').value;
+            const value = parseFloat(document.getElementById('grade-value').value);
+            const coefficient = parseInt(document.getElementById('grade-coeff').value);
+            
+            if (!studentId || isNaN(value) || value < 0 || value > 20) {
+                alert('Veuillez sélectionner un élève et entrer une note valide');
+                return;
+            }
+            
+            const grade = {
+                id: Date.now(),
+                studentId: studentId,
+                subject: subject,
+                value: value,
+                coefficient: coefficient,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            grades.push(grade);
+            saveGrades();
+            loadStudentGrades();
+            loadSubjectsGrid();
+            updateDashboard();
+            
+            document.getElementById('grade-value').value = '';
+            showStatus('Note ajoutée avec succès!', 'success');
+        }
+
+        function loadStudentGrades() {
+            const studentId = parseInt(document.getElementById('grade-student').value);
+            if (!studentId) return;
+            
+            const studentGrades = grades.filter(g => g.studentId === studentId);
+            const gradesDetail = document.getElementById('grades-detail');
+            
+            if (studentGrades.length === 0) {
+                gradesDetail.innerHTML = '<p style="text-align: center; color: #666;">Aucune note enregistrée pour cet élève</p>';
+                return;
+            }
+            
+            let html = '<div class="students-table"><div class="table-header"><div>Matière</div><div>Note</div><div>Coefficient</div><div>Date</div><div>Actions</div></div>';
+            
+            studentGrades.forEach(grade => {
+                html += `
+                    <div class="table-row">
+                        <div>${subjectNames[grade.subject]}</div>
+                        <div>${grade.value}/20</div>
+                        <div>${grade.coefficient}</div>
+                        <div>${grade.date}</div>
+                        <div class="action-buttons">
+                            <button class="btn btn-danger btn-small" onclick="deleteGrade(${grade.id})">Supprimer</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            gradesDetail.innerHTML = html;
+        }
+
+        function deleteGrade(gradeId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette note ?')) {
+                grades = grades.filter(g => g.id !== gradeId);
+                saveGrades();
+                loadStudentGrades();
+                loadSubjectsGrid();
+                updateDashboard();
+                showStatus('Note supprimée avec succès', 'success');
+            }
+        }
+
+        // Calcul des moyennes
+        function calculateStudentAverage(studentId) {
+            const studentGrades = grades.filter(g => g.studentId === studentId);
+            if (studentGrades.length === 0) return null;
+            
+            let total = 0;
+            let totalCoeff = 0;
+            
+            studentGrades.forEach(grade => {
+                total += grade.value * grade.coefficient;
+                totalCoeff += grade.coefficient;
+            });
+            
+            return totalCoeff > 0 ? (total / totalCoeff).toFixed(2) : null;
+        }
+
+        function calculateSubjectAverage(subject) {
+            const subjectGrades = grades.filter(g => g.subject === subject);
+            if (subjectGrades.length === 0) return null;
+            
+            let total = 0;
+            let totalCoeff = 0;
+            
+            subjectGrades.forEach(grade => {
+                total += grade.value * grade.coefficient;
+                totalCoeff += grade.coefficient;
+            });
+            
+            return totalCoeff > 0 ? (total / totalCoeff).toFixed(2) : null;
+        }
+
+        // Affichage des données
+        function loadDashboard() {
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            document.getElementById('total-students').textContent = students.length;
+            
+            // Calcul de la moyenne générale
+            let totalAverage = 0;
+            let count = 0;
+            
+            students.forEach(student => {
+                const avg = calculateStudentAverage(student.id);
+                if (avg !== null) {
+                    totalAverage += parseFloat(avg);
+                    count++;
+                }
+            });
+            
+            const generalAverage = count > 0 ? (totalAverage / count).toFixed(2) : '0.0';
+            document.getElementById('average-grade').textContent = generalAverage;
+            
+            // Trouver le meilleur élève
+            let bestStudent = null;
+            let bestAverage = 0;
+            
+            students.forEach(student => {
+                const avg = calculateStudentAverage(student.id);
+                if (avg !== null && parseFloat(avg) > bestAverage) {
+                    bestAverage = parseFloat(avg);
+                    bestStudent = student;
+                }
+            });
+            
+            document.getElementById('best-student').textContent = bestStudent ? 
+                `${bestStudent.firstname} ${bestStudent.lastname}` : '-';
+        }
+
+        function loadStudentsList() {
+            const studentsList = document.getElementById('students-list');
+            let html = '';
+            
+            students.forEach(student => {
+                const average = calculateStudentAverage(student.id);
+                html += `
+                    <div class="table-row">
+                        <div>${student.lastname}</div>
+                        <div>${student.firstname}</div>
+                        <div>${student.birthdate}</div>
+                        <div>${student.level}</div>
+                        <div>${average !== null ? average + '/20' : 'N/A'}</div>
+                        <div class="action-buttons">
+                            <button class="btn btn-danger btn-small" onclick="deleteStudent(${student.id})">Supprimer</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            studentsList.innerHTML = html || '<div class="table-row"><div colspan="6" style="text-align: center; color: #666;">Aucun élève inscrit</div></div>';
+        }
+
+        function loadStudentSelect() {
+            const select = document.getElementById('grade-student');
+            let html = '<option value="">Sélectionner un élève</option>';
+            
+            students.forEach(student => {
+                html += `<option value="${student.id}">${student.firstname} ${student.lastname} - ${student.level}</option>`;
+            });
+            
+            select.innerHTML = html;
+        }
+
+        function loadSubjectsGrid() {
+            const grid = document.getElementById('subjects-grid');
+            let html = '';
+            
+            subjects.forEach(subject => {
+                const average = calculateSubjectAverage(subject);
+                html += `
+                    <div class="subject-card">
+                        <div class="subject-name">${subjectNames[subject]}</div>
+                        <div class="subject-average">${average !== null ? average + '/20' : 'N/A'}</div>
+                    </div>
+                `;
+            });
+            
+            grid.innerHTML = html;
+        }
+
+        function updateStats() {
+            // Top 5 des élèves
+            const studentsWithAvg = students.map(student => ({
+                ...student,
+                average: calculateStudentAverage(student.id)
+            })).filter(s => s.average !== null)
+              .sort((a, b) => parseFloat(b.average) - parseFloat(a.average))
+              .slice(0, 5);
+            
+            let topHtml = '';
+            studentsWithAvg.forEach((student, index) => {
+                topHtml += `<div style="padding: 0.5rem; border-bottom: 1px solid #eee;">${index + 1}. ${student.firstname} ${student.lastname} - ${student.average}/20</div>`;
+            });
+            document.getElementById('top-students').innerHTML = topHtml || '<p>Aucune donnée</p>';
+            
+            // Matières les plus difficiles
+            const subjectAverages = subjects.map(subject => ({
+                subject: subject,
+                average: calculateSubjectAverage(subject)
+            })).filter(s => s.average !== null)
+              .sort((a, b) => parseFloat(a.average) - parseFloat(b.average))
+              .slice(0, 5);
+            
+            let difficultHtml = '';
+            subjectAverages.forEach(subject => {
+                difficultHtml += `<div style="padding: 0.5rem; border-bottom: 1px solid #eee;">${subjectNames[subject.subject]} - ${subject.average}/20</div>`;
+            });
+            document.getElementById('difficult-subjects').innerHTML = difficultHtml || '<p>Aucune donnée</p>';
+        }
+
+        // Analyse IA
+        async function analyzePerformance() {
+            const apiKey = getApiKey();
+            if (!apiKey) {
+                showStatus('Veuillez configurer l\'API OpenAI d\'abord', 'error');
+                return;
+            }
+
+            showStatus('Analyse en cours...', 'success', 'analysis-result');
+            document.getElementById('analysis-result').style.display = 'block';
+
+            try {
+                const analysisData = {
+                    totalStudents: students.length,
+                    totalGrades: grades.length,
+                    subjects: subjects.map(subject => ({
+                        name: subjectNames[subject],
+                        average: calculateSubjectAverage(subject),
+                        count: grades.filter(g => g.subject === subject).length
+                    })),
+                    levelDistribution: getLevelDistribution(),
+                    performanceTrends: getPerformanceTrends()
+                };
+
+                const prompt = `Analyse les données scolaires suivantes et fournis une analyse détaillée des performances:
+                
+                Données: ${JSON.stringify(analysisData, null, 2)}
+                
+                Fournis une analyse structurée avec:
+                1. Points forts du groupe
+                2. Axes d'amélioration
+                3. Recommandations spécifiques
+                4. Tendances observées`;
+
+                const analysis = await callOpenAI([
+                    { role: "user", content: prompt }
+                ]);
+
+                document.getElementById('analysis-result').innerHTML = `
+                    <h4>📊 Analyse des Performances Scolaires</h4>
+                    <div style="margin-top: 1rem;">${analysis.replace(/\n/g, '<br>')}</div>
+                `;
+
+            } catch (error) {
+                document.getElementById('analysis-result').innerHTML = `
+                    <p style="color: #dc2626;">Erreur lors de l'analyse: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function generateRecommendations() {
+            const apiKey = getApiKey();
+            if (!apiKey) {
+                showStatus('Veuillez configurer l\'API OpenAI d\'abord', 'error');
+                return;
+            }
+
+            try {
+                const studentsData = students.map(student => ({
+                    name: `${student.firstname} ${student.lastname}`,
+                    level: student.level,
+                    average: calculateStudentAverage(student.id),
+                    weakSubjects: getWeakSubjects(student.id)
+                }));
+
+                const prompt = `Sur la base des données élèves suivantes, génère des recommandations personnalisées:
+                
+                Données élèves: ${JSON.stringify(studentsData, null, 2)}
+                
+                Fournis pour chaque élève des recommandations spécifiques et des stratégies d'amélioration.`;
+
+                const recommendations = await callOpenAI([
+                    { role: "user", content: prompt }
+                ]);
+
+                const insightsDiv = document.getElementById('ai-insights');
+                insightsDiv.innerHTML = `
+                    <div class="insight-item">
+                        <h4>🎯 Recommandations Personnalisées</h4>
+                        <div style="margin-top: 1rem;">${recommendations.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+
+            } catch (error) {
+                showStatus('Erreur: ' + error.message, 'error');
+            }
+        }
+
+        // Fonctions utilitaires
+        function getLevelDistribution() {
+            const distribution = {};
+            students.forEach(student => {
+                distribution[student.level] = (distribution[student.level] || 0) + 1;
+            });
+            return distribution;
+        }
+
+        function getPerformanceTrends() {
+            // Simulation de tendances (dans une vraie app, on analyserait l'évolution dans le temps)
+            return {
+                improving: ['Mathématiques', 'Anglais'],
+                declining: ['Physique-Chimie'],
+                stable: ['Français', 'Histoire-Géo']
+            };
+        }
+
+        function getWeakSubjects(studentId) {
+            const studentGrades = grades.filter(g => g.studentId === studentId);
+            return studentGrades
+                .filter(g => g.value < 10)
+                .map(g => subjectNames[g.subject]);
+        }
+
+        // Gestion de l'API OpenAI
+        function getApiKey() {
+            return localStorage.getItem(API_KEY_STORAGE) || document.getElementById('api-key').value;
+        }
+
+        async function callOpenAI(messages, temperature = 0.7) {
+            const apiKey = getApiKey();
+            if (!apiKey) {
+                throw new Error('Clé API non configurée');
+            }
+
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: messages,
+                    temperature: temperature,
+                    max_tokens: 2000
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur API: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        // Chatbot IA
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            
+            await generateAIResponse(message);
+        }
+
+        async function generateAIResponse(userMessage) {
+            const messagesContainer = document.getElementById('chat-messages');
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            try {
+                const schoolData = {
+                    students: students.length,
+                    grades: grades.length,
+                    average: document.getElementById('average-grade').textContent
+                };
+
+                const prompt = `Tu es un expert en pédagogie et analyse scolaire. 
+                Utilise les données suivantes pour répondre de manière pertinente:
+                Données actuelles: ${JSON.stringify(schoolData)}
+                
+                Question: ${userMessage}
+                
+                Sois concret, propose des solutions pratiques et des conseils actionnables.`;
+
+                const response = await callOpenAI([
+                    { role: "user", content: prompt }
+                ]);
+                
+                messagesContainer.removeChild(typingDiv);
+                addMessage(response, 'bot');
+                
+            } catch (error) {
+                messagesContainer.removeChild(typingDiv);
+                addMessage("Désolé, je rencontre des difficultés techniques. Vérifiez votre connexion API.", 'bot');
+            }
+        }
+
+        function addMessage(content, sender) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = sender === 'user' ? '👤' : '🤖';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.innerHTML = content.replace(/\n/g, '<br>');
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            messagesContainer.appendChild(messageDiv);
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function handleChatInput(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Configuration API
+        function saveApiKey() {
+            const apiKey = document.getElementById('api-key').value;
+            if (apiKey) {
+                localStorage.setItem(API_KEY_STORAGE, apiKey);
+                showStatus('Clé API sauvegardée avec succès!', 'success');
+            } else {
+                showStatus('Veuillez entrer une clé API valide', 'error');
+            }
+        }
+
+        async function testApiKey() {
+            const apiKey = getApiKey();
+            if (!apiKey) {
+                showStatus('Veuillez d\'abord entrer une clé API', 'error');
+                return;
+            }
+
+            showStatus('Test de connexion en cours...', 'success');
+            
+            try {
+                const response = await callOpenAI([
+                    { role: "user", content: "Réponds simplement 'OK' pour confirmer la connexion." }
+                ]);
+                
+                if (response) {
+                    showStatus('✅ Connexion à l\'API OpenAI réussie!', 'success');
+                }
+            } catch (error) {
+                showStatus('❌ Erreur de connexion: ' + error.message, 'error');
+            }
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem(API_KEY_STORAGE);
+            document.getElementById('api-key').value = '';
+            showStatus('Clé API effacée', 'success');
+        }
+
+        function showStatus(message, type, elementId = 'api-status') {
+            const statusEl = document.getElementById(elementId);
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Sauvegarde des données
+        function saveStudents() {
+            localStorage.setItem('students', JSON.stringify(students));
+        }
+
+        function saveGrades() {
+            localStorage.setItem('grades', JSON.stringify(grades));
+        }
+    </script>
+</body>
+</html>
